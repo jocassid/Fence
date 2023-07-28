@@ -16,18 +16,6 @@ def set_attributes(element, attributes: dict, **kwargs):
         element.setAttribute(key, value)
 
 
-def feet_inches_to_meters(feet: int, inches: int = 0):
-    total_inches = feet * 12 + inches
-    return total_inches / 39.37
-
-
-def meters_to_feet_inches(meters: float) -> Tuple[int, int]:
-    total_inches = meters * 39.37
-    feet = total_inches // 12
-    inches = round(total_inches % 12)
-    return int(feet), int(inches)
-
-
 class Svg:
 
     def __init__(self, width, height):
@@ -84,57 +72,67 @@ class Svg:
         self.svg.appendChild(rect)
 
 
-class MetersToUnitsConverter:
-    def __init__(self, units_len, meters_len):
-        self.units_per_meter = units_len / meters_len
+# class MetersToUnitsConverter:
+#     def __init__(self, units_len, meters_len):
+#         self.units_per_meter = units_len / meters_len
+#
+#     def __call__(self, *args, **kwargs):
+#         return args[0] * self.units_per_meter
 
-    def __call__(self, *args, **kwargs):
-        return args[0] * self.units_per_meter
+
+def build_converters(units_length, feet_length):
+    units_per_foot = units_length / feet_length
+
+    def ft_in_to_units(feet, inches) -> float:
+        feet += inches / 12
+        return feet * units_per_foot
+
+    def units_to_ft_in(units):
+        total_feet = units / units_per_foot
+        feet = floor(total_feet)
+        inches = round((total_feet - feet) * 12)
+        return int(feet), int(inches)
+
+    return ft_in_to_units, units_to_ft_in
 
 
 def main():
 
     # size the drawing represents
-    meters_width = feet_inches_to_meters(125)
-    feet_height = feet_inches_to_meters(175)
+    feet_width = 125
+    feet_height = 175
 
     # width and height of images in units
     units_width = 400
-    units_height = int((units_width * feet_height) / meters_width)
+    units_height = int((units_width * feet_height) / feet_width)
     print(f"{units_width=} {units_height=}")
 
-    units_converter = MetersToUnitsConverter(units_width, meters_width)
+    ft_in_to_units, units_to_ft_in = build_converters(units_width, feet_width)
 
-    len_ne_side = feet_inches_to_meters(4, 8)  # side with gate by Scott & Melissa
-    len_e_side = feet_inches_to_meters(55, 7)
-    len_nw_side = feet_inches_to_meters(14)  # side with gate across driveway
-    len_w_side = feet_inches_to_meters(114, 7)
+    len_ne_side = ft_in_to_units(4, 8)  # side with gate by Scott & Melissa
+    len_e_side = ft_in_to_units(55, 7)
+    len_nw_side = ft_in_to_units(14)  # side with gate across driveway
+    len_w_side = ft_in_to_units(114, 7)
 
-    garage_s_wall = feet_inches_to_meters(26, 1)
-    garage_w_wall = feet_inches_to_meters(32, 4)
+    garage_s_wall = ft_in_to_units(26, 1)
+    garage_w_wall = ft_in_to_units(32, 4)
 
-    house_w_wall = feet_inches_to_meters(28, 3)
-    house_s_wall = feet_inches_to_meters(30)
+    house_w_wall = ft_in_to_units(28, 3)
+    house_s_wall = ft_in_to_units(30)
 
     overall_width = len_nw_side + house_s_wall + garage_s_wall + len_ne_side
-    print(f"{overall_width = }")
+    print(f"overall_width=")
 
     len_s_side = sqrt(
         overall_width ** 2 + (len_w_side - (len_e_side + garage_w_wall)) ** 2
     )
     print(f"{len_s_side = }")
 
-
-
-
-
-
-
     svg = Svg(units_width, units_height)
 
     nw_corner = (
-        units_converter(feet_inches_to_meters(10)),
-        units_converter(feet_inches_to_meters(10) + house_w_wall)
+        ft_in_to_units(10),
+        ft_in_to_units(10) + house_w_wall
     )
     sw_corner = (
         nw_corner[0],
