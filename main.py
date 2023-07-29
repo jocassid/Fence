@@ -1,16 +1,47 @@
 
-from math import floor, sqrt
+from math import atan, cos, floor, sin
+from math import degrees as radians_to_degrees
+from math import radians as degrees_to_radians
 from xml.dom import getDOMImplementation
-from typing import Tuple, Union
 
-import xml.dom
+from measurements import \
+    ft_in_to_units, \
+    garage_s_wall, \
+    garage_w_wall, \
+    garage_se_corner, \
+    house_backdoor_corner, \
+    house_nw_corner, \
+    house_w_wall, \
+    house_s_wall, \
+    house_sw_corner, \
+    ne_corner, \
+    nw_corner, \
+    se_corner, \
+    southern_fence_angle_degrees, \
+    sw_corner, \
+    units_height, \
+    units_width
 
 
 NS_URI = 'http://www.w3.org/2000/svg'
 
+DEFAULT_ATTRIBUTES = {
+    'stroke': 'black',
+    'stroke-width': 2,
+    'fill': 'transparent',
+}
 
-def set_attributes(element, attributes: dict, **kwargs):
-    for key, value in attributes.items():
+
+dashed_stroke = {
+    'stroke-dasharray': '5,5',
+}
+
+
+def set_attributes(element, **kwargs):
+    all_attributes = DEFAULT_ATTRIBUTES.copy()
+    all_attributes.update(kwargs)
+
+    for key, value in all_attributes.items():
         if not isinstance(value, str):
             value = str(value)
         element.setAttribute(key, value)
@@ -33,164 +64,134 @@ class Svg:
         svg = doc.documentElement
         set_attributes(
             svg,
-            {
-                'version': '1.0',
-                'width': width,
-                'height': height,
-                'xmlns': NS_URI,
-            },
+            version='1.0',
+            width=width,
+            height=height,
+            xmlns=NS_URI,
         )
         return svg
 
-    def draw_line(self, x1, y1, x2, y2, stroke=None):
+    def draw_line(self, x1, y1, x2, y2, **kwargs):
         line = self.doc.createElement('line')
         set_attributes(
             line,
-            {
-                'x1': x1,
-                'y1': y1,
-                'x2': x2,
-                'y2': y2,
-                'stroke': stroke
-            },
+            x1=x1, y1=y1,
+            x2=x2, y2=y2,
+            **kwargs,
         )
         self.svg.appendChild(line)
 
-    def draw_rect(self, x, y, width, height, stroke=None, fill='transparent'):
+    def draw_line_point_direction_distance(self, x1, y1, degrees, distance, **kwargs):
+        radians = degrees_to_radians(degrees)
+        delta_x = cos(radians) * distance
+        delta_y = -1.0 * sin(radians) * distance
+        self.draw_line(x1, y1, x1 + delta_x, y1 + delta_y, **kwargs)
+
+    def draw_rect(self, x, y, width, height, **kwargs):
         rect = self.doc.createElement('rect')
         set_attributes(
             rect,
-            {
-                'x': x,
-                'y': y,
-                'width': width,
-                'height': height,
-                'stroke': stroke,
-                'fill': fill,
-            }
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            **kwargs,
         )
         self.svg.appendChild(rect)
 
 
-# class MetersToUnitsConverter:
-#     def __init__(self, units_len, meters_len):
-#         self.units_per_meter = units_len / meters_len
-#
-#     def __call__(self, *args, **kwargs):
-#         return args[0] * self.units_per_meter
+def draw_extant_fence_line(svg: Svg, **kwargs):
+    svg.draw_line(*nw_corner, *sw_corner, **kwargs)
+    svg.draw_line(*sw_corner, *se_corner, **kwargs)
+    svg.draw_line(*se_corner, *ne_corner, **kwargs)
+    svg.draw_line(*nw_corner, *house_sw_corner, **kwargs)
+    svg.draw_line(*garage_se_corner, *ne_corner, **kwargs)
 
 
-def build_converters(units_length, feet_length):
-    units_per_foot = units_length / feet_length
+def draw_neighbors_fences(svg: Svg, **kwargs):
+    kwargs.update(dashed_stroke)
+    corners_and_angles = {
+        nw_corner: [180],
+        ne_corner: [90],
+        se_corner: [southern_fence_angle_degrees, 270],
+        sw_corner: [southern_fence_angle_degrees + 180, 270],
+    }
+    twelve_ft_in_units = ft_in_to_units(12)
+    for corner, angles in corners_and_angles.items():
+        for angle in angles:
+            svg.draw_line_point_direction_distance(
+                *corner,
+                angle,
+                twelve_ft_in_units,
+                **kwargs,
+            )
 
-    def ft_in_to_units(feet, inches) -> float:
-        feet += inches / 12
-        return feet * units_per_foot
 
-    def units_to_ft_in(units):
-        total_feet = units / units_per_foot
-        feet = floor(total_feet)
-        inches = round((total_feet - feet) * 12)
-        return int(feet), int(inches)
-
-    return ft_in_to_units, units_to_ft_in
-
-
-def main():
-
-    # size the drawing represents
-    feet_width = 125
-    feet_height = 175
-
-    # width and height of images in units
-    units_width = 400
-    units_height = int((units_width * feet_height) / feet_width)
-    print(f"{units_width=} {units_height=}")
-
-    ft_in_to_units, units_to_ft_in = build_converters(units_width, feet_width)
-
-    len_ne_side = ft_in_to_units(4, 8)  # side with gate by Scott & Melissa
-    len_e_side = ft_in_to_units(55, 7)
-    len_nw_side = ft_in_to_units(14)  # side with gate across driveway
-    len_w_side = ft_in_to_units(114, 7)
-
-    garage_s_wall = ft_in_to_units(26, 1)
-    garage_w_wall = ft_in_to_units(32, 4)
-
-    house_w_wall = ft_in_to_units(28, 3)
-    house_s_wall = ft_in_to_units(30)
-
-    overall_width = len_nw_side + house_s_wall + garage_s_wall + len_ne_side
-    print(f"overall_width=")
-
-    len_s_side = sqrt(
-        overall_width ** 2 + (len_w_side - (len_e_side + garage_w_wall)) ** 2
-    )
-    print(f"{len_s_side = }")
-
-    svg = Svg(units_width, units_height)
-
-    nw_corner = (
-        ft_in_to_units(10),
-        ft_in_to_units(10) + house_w_wall
-    )
-    sw_corner = (
-        nw_corner[0],
-        nw_corner[1] + units_converter(len_w_side)
-    )
-    se_corner = (
-        nw_corner[0] + units_converter(overall_width),
-        nw_corner[1] + units_converter(garage_w_wall + len_e_side),
-    )
-    ne_corner = (
-        se_corner[0],
-        nw_corner[1] + units_converter(garage_w_wall),
-    )
-    house_sw_corner = (
-        nw_corner[0] + units_converter(len_nw_side),
-        nw_corner[1]
-    )
-    house_nw_corner = (
-        house_sw_corner[0],
-        house_sw_corner[1] - units_converter(house_w_wall)
-    )
-    house_backdoor_corner = (
-        house_sw_corner[0] + units_converter(house_s_wall),
-        house_sw_corner[1],
-    )
-    garage_se_corner = (
-        ne_corner[0] - units_converter(len_ne_side),
-        ne_corner[1],
-    )
-
-    svg.draw_line(*nw_corner, *sw_corner, 'black')
-    svg.draw_line(*sw_corner, *se_corner, 'black')
-    svg.draw_line(*se_corner, *ne_corner, 'black')
-    svg.draw_line(*nw_corner, *house_sw_corner, 'black')
-    svg.draw_line(*garage_se_corner, *ne_corner, 'black')
-
+def draw_house(svg):
     svg.draw_rect(
         *house_nw_corner,
-        units_converter(house_s_wall + garage_s_wall),
-        units_converter(house_w_wall),
-        'black',
-        'black',
+        house_s_wall + garage_s_wall,
+        house_w_wall,
+        fill='black'
     )
     svg.draw_rect(
         *house_backdoor_corner,
-        units_converter(garage_s_wall),
-        units_converter(garage_w_wall),
-        'black',
-        'black',
+        garage_s_wall,
+        garage_w_wall,
+        fill='black',
     )
 
-    # print(dir(xml.dom))
 
-    with open('fence1.svg', 'w') as out_file:
+def replace_existing():
+    svg = Svg(units_width, units_height)
+
+    draw_extant_fence_line(svg)
+    draw_neighbors_fences(svg)
+    draw_house(svg)
+
+    with open('replace_existing.svg', 'w') as out_file:
         out_file.write(svg.doc.toprettyxml())
+
+
+def build_inside():
+    svg = Svg(units_width, units_height)
+
+    draw_extant_fence_line(svg, **dashed_stroke)
+    draw_neighbors_fences(svg)
+    draw_house(svg)
+
+    offset = ft_in_to_units(2)
+    inner_nw_corner = (
+        nw_corner[0] + offset,
+        nw_corner[1],
+    )
+    inner_sw_corner = (
+        sw_corner[0] + offset,
+        sw_corner[1] - offset
+    )
+    inner_se_corner = (
+        se_corner[0] - offset,
+        se_corner[1] - offset,
+    )
+    inner_ne_corner = (
+        ne_corner[0] - offset,
+        ne_corner[1]
+    )
+
+    svg.draw_line(*inner_nw_corner, *house_sw_corner)
+    svg.draw_line(*inner_nw_corner, *inner_sw_corner)
+    svg.draw_line(*inner_sw_corner, *inner_se_corner)
+    svg.draw_line(*inner_se_corner, *inner_ne_corner)
+    svg.draw_line(*inner_ne_corner, *garage_se_corner)
+
+    with open("build_inside.svg", 'w') as out_file:
+        out_file.write(svg.doc.toprettyxml())
+
+
+def main():
+    replace_existing()
+    build_inside()
 
 
 if __name__ == '__main__':
     main()
-
-

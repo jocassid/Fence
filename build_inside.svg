@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<!DOCTYPE svg
+  PUBLIC 'publicId'
+  'systemId'>
+<svg stroke="black" stroke-width="2" fill="transparent" version="1.0" width="400" height="560" xmlns="http://www.w3.org/2000/svg">
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="122.4" x2="64.0" y2="489.0666666666667" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="489.0666666666667" x2="303.20000000000005" y2="403.73333333333335" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="303.20000000000005" y1="403.73333333333335" x2="303.20000000000005" y2="225.86666666666667" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="122.4" x2="108.80000000000001" y2="122.4" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="288.2666666666667" y1="225.86666666666667" x2="303.20000000000005" y2="225.86666666666667" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="122.4" x2="25.599999999999994" y2="122.4" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="303.20000000000005" y1="225.86666666666667" x2="303.20000000000005" y2="187.46666666666667" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="303.20000000000005" y1="403.73333333333335" x2="339.368256574551" y2="390.8330536325885" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="303.20000000000005" y1="403.73333333333335" x2="303.20000000000005" y2="442.1333333333333" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="489.0666666666667" x2="27.83174342544902" y2="501.9669463674116" stroke-dasharray="5,5"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="64.0" y1="489.0666666666667" x2="63.99999999999999" y2="527.4666666666667" stroke-dasharray="5,5"/>
+	<rect stroke="black" stroke-width="2" fill="black" x="108.80000000000001" y="32.0" width="179.46666666666667" height="90.4"/>
+	<rect stroke="black" stroke-width="2" fill="black" x="204.8" y="122.4" width="83.46666666666667" height="103.46666666666668"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="70.4" y1="122.4" x2="108.80000000000001" y2="122.4"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="70.4" y1="122.4" x2="70.4" y2="482.66666666666674"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="70.4" y1="482.66666666666674" x2="296.80000000000007" y2="397.33333333333337"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="296.80000000000007" y1="397.33333333333337" x2="296.80000000000007" y2="225.86666666666667"/>
+	<line stroke="black" stroke-width="2" fill="transparent" x1="296.80000000000007" y1="225.86666666666667" x2="288.2666666666667" y2="225.86666666666667"/>
+</svg>
